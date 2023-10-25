@@ -21,18 +21,11 @@ while running:
         if event.type == KEYDOWN:
             if event.key == K_ESCAPE:
                 running = False
-    
-    
     player.x += (keys[pygame.K_RIGHT] - keys[pygame.K_LEFT]) * speed
-    if player.x < -5:
-        player.x = -5
-    if player.x > w - 15:
-        player.x = w - 15
+    player.x = max(-5, min(player.x, w - 15))
     player.y += (keys[pygame.K_DOWN] - keys[pygame.K_UP]) * speed
-    if player.y < -5:
-        player.y = -5
-    if player.y > h - 15:
-        player.y = h - 15
+    player.y = max(-5, min(player.y, h - 15))
+
     print(player.x, player.y)
 
     player.centerx = player.centerx % screen.get_width()
@@ -41,7 +34,5 @@ while running:
     screen.fill("white")
     pygame.draw.circle(screen, "blue", player.center, 5)
     pygame.display.flip()
-
-    
 
 pygame.quit()
