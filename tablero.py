@@ -1,15 +1,17 @@
 import pygame
 from pygame.locals import *
-import sys
+from tkinter import messagebox
 
 pygame.init()
 size = w, h = 800, 600
 screen = pygame.display.set_mode(size)
 clock = pygame.time.Clock()
 
-player = pygame.Rect(0, 0, 20, 20)
+player = pygame.Rect(0, 0, 10, 10)
 player.center = screen.get_rect().center
 speed = 5
+
+wall1 = pygame.Rect(200, 100, 400, 10)
 
 running = True
 while running:
@@ -26,6 +28,10 @@ while running:
     player.y += (keys[pygame.K_DOWN] - keys[pygame.K_UP]) * speed
     player.y = max(-5, min(player.y, h - 15))
 
+    if player.colliderect(wall1):
+        messagebox.showinfo('Game Over','You died.')
+        running = False
+
     print(player.x, player.y)
 
     player.centerx = player.centerx % screen.get_width()
@@ -33,6 +39,7 @@ while running:
 
     screen.fill("white")
     pygame.draw.circle(screen, "blue", player.center, 5)
+    pygame.draw.rect(screen, "black", wall1)
     pygame.display.flip()
 
 pygame.quit()
