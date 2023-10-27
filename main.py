@@ -54,11 +54,14 @@ class Trophy(pygame.sprite.Sprite):
         self.rect.y = TILE_Y*20
 
 class Obstacle(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, x, y, w, h, speed_x, speed_y):
         super().__init__()
-        self.rect = pygame.Rect(0, 0, TILE_X//2, TILE_Y//2)
-        self.rect.x = 0
-        self.rect.y = 0
+        self.rect = pygame.Rect(x, y, w, h)
+        self.x_accul = 0
+        self.y_accul = 0
+        self.speed_x = speed_x
+        self.speed_y = speed_y
+
 
 def construir_mapa(map):
     listaMuros = []
@@ -101,6 +104,23 @@ listaTrophy = pygame.sprite.Group()
 trophy = Trophy()
 listaTrophy.add(trophy)
 
+obstaculos = [
+    (TILE_X * 3.375, TILE_Y * 4.125, TILE_X//4, TILE_Y*.75, 0, 2),
+    (TILE_X * 6.375, TILE_Y * 6.125, TILE_X//4, TILE_Y*.75, 0, -2),
+    (TILE_X * 9.375, TILE_Y * 4.125, TILE_X//4, TILE_Y*.75, 0, 2),
+    (TILE_X * 19.375, TILE_Y * 2.125, TILE_X//4, TILE_Y*.75, 0, 2),
+    (TILE_X * 22.375, TILE_Y * 4.125, TILE_X//4, TILE_Y*.75, 0, -2),
+    (TILE_X * 25.375, TILE_Y * 2.125, TILE_X//4, TILE_Y*.75, 0, 2),
+    (TILE_X * 28.375, TILE_Y * 4.125, TILE_X//4, TILE_Y*.75, 0, -2),
+    (TILE_X * 2.375, TILE_Y * 14.125, TILE_X//4, TILE_Y*.75, 0, -2),
+    (TILE_X * 6.375, TILE_Y * 12.125, TILE_X//4, TILE_Y*.75, 0, 2),
+    (TILE_X * 12.375, TILE_Y * 18.5, TILE_X//4, TILE_Y*1.75, 0, -1)
+    ]
+
+obstacles = []
+for obstaculo in obstaculos:
+    obstacles.append(Obstacle(*obstaculo))
+
 gameOver = False
 while not gameOver:
     clock.tick(60)
@@ -131,6 +151,25 @@ while not gameOver:
         if protagonist.rect.colliderect(trofeo):
             gameOver=True
             messagebox.showinfo('¡Felicidades!','¡Has ganado!')
+    for obstacle in obstacles:
+        obstacle.rect.x += obstacle.speed_x
+        obstacle.rect.y += obstacle.speed_y
+        obstacle.x_accul += obstacle.speed_x
+        obstacle.y_accul += obstacle.speed_y
+        if abs(obstacle.x_accul) > 2*TILE_X:
+            obstacle.speed_x *= -1
+            obstacle.x_accul = 0
+        if abs(obstacle.y_accul) > 2*TILE_Y:
+            obstacle.speed_y *= -1
+            obstacle.y_accul = 0
+
+        if obstacle.rect.y < 0 or obstacle.rect.y > HEIGHT:
+            obstacle.speed_y *= -1
+        if obstacle.rect.x < 0 or obstacle.rect.x > WIDTH:
+            obstacle.speed_x *= -1
+        if protagonist.rect.colliderect(obstacle):
+            gameOver=True
+            messagebox.showinfo('Game over','¡Inténtalo de nuevo!')
 
     window.fill("black")
     x = 0
@@ -147,6 +186,10 @@ while not gameOver:
         y+=TILE_Y
     listaProtagonist.draw(window)
     listaTrophy.draw(window)
+
+    for obstacle in obstacles:
+        pygame.draw.rect(window, "red", obstacle)
+
     #dibujar_mapa(window, listaMuros)
     pygame.display.flip()
 pygame.quit()
