@@ -2,8 +2,12 @@ import pygame
 from pygame.locals import *
 from tkinter import messagebox
 
+# constantes para el tamaño de la pantalla
 WIDTH = 1200
 HEIGHT = 800
+
+# arreglo que representa el laberinto; 1 representa un muro y 0 representa un espacio vacío
+
    #[0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30]
 map =  [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -30,6 +34,8 @@ map =  [
     ]
 TILE_X = WIDTH/len(map[0])
 TILE_Y = HEIGHT/len(map)
+
+# objeto para los muros del laberinto
 class Wall(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -37,6 +43,7 @@ class Wall(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (TILE_X, TILE_Y)) 
         self.rect = self.image.get_rect()
 
+# objeto para el jugador
 class Protagonist(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -44,6 +51,7 @@ class Protagonist(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (17, 17)) 
         self.rect = self.image.get_rect()
 
+# objeto para el trofeo que indica que ganó
 class Trophy(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -53,6 +61,7 @@ class Trophy(pygame.sprite.Sprite):
         self.rect.x = TILE_X*21.05
         self.rect.y = TILE_Y*20
 
+# objeto para los obstáculos móviles
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self, x, y, w, h, speed_x, speed_y):
         super().__init__()
@@ -62,7 +71,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.speed_x = speed_x
         self.speed_y = speed_y
 
-
+# función para construir el mapa a partir del arreglo
 def construir_mapa(map):
     listaMuros = []
     x=0
@@ -76,9 +85,11 @@ def construir_mapa(map):
         y+=TILE_Y
     return listaMuros
 
+# función para dibujar cada muro
 def dibujar_muro(superficie, rectangulo):
     pygame.draw.rect(superficie, "green", rectangulo)
 
+# función para dibujar los muros en la pantalla
 def dibujar_mapa(superficie, listaMuros):
     for muro in listaMuros:
         dibujar_muro(superficie, muro)
@@ -93,6 +104,8 @@ pygame.init()
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Laberinto")
 clock = pygame.time.Clock()
+
+# se crean los sprites de muros, jugador, y trofeo
 listaWall = pygame.sprite.Group()
 wall = Wall()
 listaWall.add(wall)
@@ -104,6 +117,7 @@ listaTrophy = pygame.sprite.Group()
 trophy = Trophy()
 listaTrophy.add(trophy)
 
+# arreglo que representa los obstáculos móvilesl sus coordenadas, tamaños, y velocidades
 obstaculos = [
     (TILE_X * 3.375, TILE_Y * 4.125, TILE_X//4, TILE_Y*.75, 0, 2),
     (TILE_X * 6.375, TILE_Y * 6.125, TILE_X//4, TILE_Y*.75, 0, -2),
@@ -117,10 +131,12 @@ obstaculos = [
     (TILE_X * 12.375, TILE_Y * 18.5, TILE_X//4, TILE_Y*1.75, 0, -1)
     ]
 
+# se crean los objetos de los obstáculos móviles
 obstacles = []
 for obstaculo in obstaculos:
     obstacles.append(Obstacle(*obstaculo))
 
+# se inicializa el juego
 gameOver = False
 while not gameOver:
     clock.tick(60)
@@ -152,10 +168,13 @@ while not gameOver:
             gameOver=True
             messagebox.showinfo('¡Felicidades!','¡Has ganado!')
     for obstacle in obstacles:
+        # se mueven los obstáculos
         obstacle.rect.x += obstacle.speed_x
         obstacle.rect.y += obstacle.speed_y
         obstacle.x_accul += obstacle.speed_x
         obstacle.y_accul += obstacle.speed_y
+
+        # los obstáculos rebotan en las paredes
         if abs(obstacle.x_accul) > 2*TILE_X:
             obstacle.speed_x *= -1
             obstacle.x_accul = 0
@@ -163,14 +182,12 @@ while not gameOver:
             obstacle.speed_y *= -1
             obstacle.y_accul = 0
 
-        if obstacle.rect.y < 0 or obstacle.rect.y > HEIGHT:
-            obstacle.speed_y *= -1
-        if obstacle.rect.x < 0 or obstacle.rect.x > WIDTH:
-            obstacle.speed_x *= -1
+        # se detecta si el jugador choca con un obstáculo y pierde el juego
         if protagonist.rect.colliderect(obstacle):
             gameOver=True
             messagebox.showinfo('Game over','¡Inténtalo de nuevo!')
 
+    # se dibujan los objetos en la pantalla
     window.fill("black")
     x = 0
     y = 0
@@ -190,6 +207,5 @@ while not gameOver:
     for obstacle in obstacles:
         pygame.draw.rect(window, "red", obstacle)
 
-    #dibujar_mapa(window, listaMuros)
     pygame.display.flip()
 pygame.quit()
