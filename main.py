@@ -1,4 +1,6 @@
 import pygame
+from pygame.locals import *
+from tkinter import messagebox
 
 class Wall(pygame.sprite.Sprite):
     def __init__(self):
@@ -13,6 +15,15 @@ class Protagonist(pygame.sprite.Sprite):
         self.image = pygame.image.load("bounce.png").convert_alpha()
         self.image = pygame.transform.scale(self.image, (17, 17)) 
         self.rect = self.image.get_rect()
+
+class Trophy(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.image.load("trophy.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (25, 25)) 
+        self.rect = self.image.get_rect()
+        self.rect.x = WIDTH//2.2
+        self.rect.y = HEIGHT//2
 
 def construir_mapa(map):
     listaMuros = []
@@ -82,6 +93,10 @@ map =  [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]]
 listaMuros = construir_mapa(map)
+listaTrophy = pygame.sprite.Group()
+trophy = Trophy()
+listaTrophy.add(trophy)
+
 gameOver = False
 while not gameOver:
     clock.tick(60)
@@ -108,6 +123,11 @@ while not gameOver:
         if protagonist.rect.colliderect(muro) or particle["coordenates"]['x'] < 0 or particle["coordenates"]['x'] > WIDTH or particle["coordenates"]['y'] < 0 or particle["coordenates"]['y'] > HEIGHT:
             particle["coordenates"]['x'] -= particle["direction"]['x']
             particle["coordenates"]['y'] -= particle["direction"]['y']
+
+    for trofeo in listaTrophy:
+        if protagonist.rect.colliderect(trofeo):
+            gameOver=True
+            messagebox.showinfo('¡Felicidades!','¡Has ganado!')
     window.fill(BLACK)
     x = 0
     y = 0
@@ -122,6 +142,7 @@ while not gameOver:
         x=0
         y+=25
     listaProtagonist.draw(window)
+    listaTrophy.draw(window)
     #dibujar_mapa(window, listaMuros)
     pygame.display.flip()
 pygame.quit()
